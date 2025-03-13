@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation Evaluation Prompt Generator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 20px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            background: linear-gradient(to bottom right, #e0f7fa, #b2ebf2); /* Light cyan gradient */
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #d81b60; /* Bright pinkish-red */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #0288d1; /* Deep blue */
+        }
+        .input-section, .output-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #fff; /* White background for sections */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #388e3c; /* Forest green */
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            border: 2px solid #f06292; /* Soft pink border */
+            border-radius: 5px;
+            resize: vertical;
+            background-color: #f9fbe7; /* Light lime background */
+            color: #424242; /* Dark gray text */
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #ab47bc; /* Vibrant purple */
+            box-shadow: 0 0 5px rgba(171, 71, 188, 0.5);
+        }
+        .button-group {
+            margin-top: 10px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        #generateBtn {
+            background-color: #0288d1; /* Deep blue */
+        }
+        #generateBtn:hover {
+            background-color: #0277bd;
+        }
+        #clearInputBtn, #clearOutputBtn {
+            background-color: #d32f2f; /* Bright red */
+        }
+        #clearInputBtn:hover, #clearOutputBtn:hover {
+            background-color: #c62828;
+        }
+        #copyBtn {
+            background-color: #388e3c; /* Forest green */
+        }
+        #copyBtn:hover {
+            background-color: #2e7d32;
+        }
+        #promptOutput {
+            border: 2px dashed #ab47bc; /* Vibrant purple dashed border */
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f3e5f5; /* Light purple background */
+            color: #424242; /* Dark gray text */
+            white-space: pre-wrap;
+            min-height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Translation Evaluation Prompt Generator</h1>
+
+    <div class="input-section">
+        <label for="sourceText">Source Text (ST):</label>
+        <textarea id="sourceText" placeholder="Enter the source text here..."></textarea>
+
+        <label for="targetText">Target Text (TL):</label>
+        <textarea id="targetText" placeholder="Enter the translated text here..."></textarea>
+
+        <div class="button-group">
+            <button id="generateBtn" onclick="generatePrompt()">Generate Prompt</button>
+            <button id="clearInputBtn" onclick="clearInputs()">Clear Inputs</button>
+        </div>
+    </div>
+
+    <div class="output-section">
+        <h2>Generated Prompt:</h2>
+        <div id="promptOutput" contenteditable="true">The prompt will appear here after clicking "Generate Prompt".</div>
+        <div class="button-group">
+            <button id="copyBtn" onclick="copyPrompt()">Copy</button>
+            <button id="clearOutputBtn" onclick="clearOutput()">Clear Output</button>
+        </div>
+    </div>
+
+    <script>
+        function generatePrompt() {
+            const sourceText = document.getElementById('sourceText').value.trim();
+            const targetText = document.getElementById('targetText').value.trim();
+
+            if (!sourceText || !targetText) {
+                alert('Please enter both source text and target text.');
+                return;
+            }
+
+            const prompt = `
+Evaluate the following translation based on the provided marking criteria. Assign scores for each category: Accuracy of Content (out of 70), Accuracy of Register (out of 10), Vocabulary/Collocation/Specialized Terminology (out of 10), and TL Grammar (out of 10). Provide a detailed explanation for each score based on the criteria below, formatting the explanation with bullet points or line breaks to ensure it wraps and is readable within the table cell. The total score should be out of 100. Use the following overall ranges for guidance: Below Average (0-49), Good (50-74), Very Good (75-89), Excellent (90-100). Present the evaluation report in a table format with columns for Category, Score, and Explanation.
+
+Marking Criteria:
+
+1. **Accuracy of Content (70%)**:
+   - Below Average (0-24): Most messages in the ST are completely mirrorized improperly omitted. Information lacks coherence, causing difficulties for readers. Translation does not read fluently or naturally in TL, with many improper/unnecessary additions and misunderstandings at the text level.
+   - Good (25-39): Most messages correctly rendered with minor mistakes at sentence level. Some paragraphs lack correspondence but don’t cause major issues. A few improper/unnecessary additions, but they don’t affect the message at the text level.
+   - Very Good (40-54): Most messages correctly rendered with minor mistakes at word level. Translation is coherent with minor SL influences. Reads fluently with 1-2 minor issues. 1-2 improper/unnecessary additions/omissions, but they don’t affect the message.
+   - Excellent (55-70): All messages correctly rendered, organized coherently. Reads fluently and naturally in TL. No unnecessary additions or improper omissions.
+
+2. **Accuracy of Register (10%)**:
+   - Below Average (3-4): Style/register differ from ST and are improper for SL text purpose.
+   - Good (5-7): Style/register satisfactory congruent with ST purpose, with some improper expressions.
+   - Very Good (7.5-8): Style/register match ST purpose with a few improper expressions.
+   - Excellent (9-10): Style/register perfectly match ST purpose and TL culture.
+
+3. **Vocabulary/Collocation/Specialized Terminology (10%)**:
+   - Below Average (3-4): Major mistranslations at word level altering meaning. Many collocation errors. Specialized terms mistranslated.
+   - Good (5-7): Some mistranslations at word level affecting meaning. Some collocation errors. Specialized terms in plain language.
+   - Very Good (7.5-8): 1-2 minor mistranslations. A few minor collocation errors. Specialized terms correct but some in plain language.
+   - Excellent (9-10): No mistranslations, no collocation errors, specialized terms translated correctly.
+
+4. **TL Grammar (10%)**:
+   - Below Average (3-4): Many grammatical mistakes affecting meaning at sentence level.
+   - Good (5-7): 1-2 minor grammatical mistakes affecting meaning.
+   - Very Good (7.5-8): 1-2 minor grammatical mistakes not affecting meaning.
+   - Excellent (9-10): No grammatical mistakes.
+
+Source Text (ST):
+"${sourceText}"
+
+Target Text (TL):
+"${targetText}"
+
+Provide the evaluation report in a table like this:
+
+| Category                                      | Score | Explanation                                      |
+|----------------------------------------------|-------|-------------------------------------------------|
+| Accuracy of Content (out of 70)              |       |                                                 |
+| Accuracy of Register (out of 10)             |       |                                                 |
+| Vocabulary/Collocation/Specialized Terminology (out of 10) |       |                                                 |
+| TL Grammar (out of 10)                       |       |                                                 |
+| **Total Score (out of 100)**                 |       |                                                 |
+            `;
+
+            document.getElementById('promptOutput').textContent = prompt;
+        }
+
+        function clearInputs() {
+            document.getElementById('sourceText').value = '';
+            document.getElementById('targetText').value = '';
+            document.getElementById('promptOutput').textContent = 'The prompt will appear here after clicking "Generate Prompt".';
+        }
+
+        function copyPrompt() {
+            const promptText = document.getElementById('promptOutput').textContent;
+            const textarea = document.createElement('textarea');
+            textarea.value = promptText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                alert('Prompt copied to clipboard!');
+            } catch (err) {
+                alert('Failed to copy prompt: ' + err);
+            }
+            document.body.removeChild(textarea);
+        }
+
+        function clearOutput() {
+            document.getElementById('promptOutput').textContent = '';
+        }
+    </script>
+</body>
+</html>
